@@ -1,8 +1,20 @@
 ## Qmod: A Python class implementing the Abel-Hayashi "Marginal Q" model of investment.
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Mv77/Q_Investment/master)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/llorracc/Q-Investment/master)
 
 This implementation follows Professor Christopher D. Carroll's [lecture notes](http://www.econ2.jhu.edu/people/ccarroll/public/lecturenotes/Investment/qModel/).
+
+## Installation
+
+For installation instructions, see [INSTALLATION.md](INSTALLATION.md).
+
+Quick start with `uv`:
+```bash
+git clone https://github.com/llorracc/Q-Investment.git
+cd Q-Investment
+uv venv
+uv pip install -e ".[dev]"
+```
 
 ### 1. Qmod
 
@@ -18,6 +30,6 @@ The Dolo folder implements the model using [Dolo](https://dolo.readthedocs.io/en
 ### 3. Examples
 
 Current examples include:
-- [Qmod_basic_features](https://github.com/Mv77/Q_Investment/blob/master/Examples/Qmod_basic_features.ipynb): illustrates how to use Qmod and its main functions.
-- [Dolo_simulations](https://github.com/Mv77/Q_Investment/blob/master/Examples/Dolo_simulations.ipynb): uses Dolo to conduct more complicated simulation exercises that could not be easily achieved using Qmod.
-- [Structural_changes_Qmod_Dolo](https://github.com/Mv77/Q_Investment/blob/master/Examples/Structural_changes_Qmod_Dolo.ipynb): solves the dynamic exercises in Professor Christopher D. Carroll's [lecture notes](http://www.econ2.jhu.edu/people/ccarroll/public/lecturenotes/Investment/qModel/) using both Qmod and Dolo.
+- [Qmod-basic-features](https://github.com/llorracc/Q-Investment/blob/master/Examples/Qmod-basic-features.ipynb): illustrates how to use Qmod and its main functions.
+- [Dolo-simulations](https://github.com/llorracc/Q-Investment/blob/master/Examples/Dolo-simulations.ipynb): uses Dolo to conduct more complicated simulation exercises that could not be easily achieved using Qmod.
+- [Structural-changes-Qmod-Dolo](https://github.com/llorracc/Q-Investment/blob/master/Examples/Structural-changes-Qmod-Dolo.ipynb): solves the dynamic exercises in Professor Christopher D. Carroll's [lecture notes](http://www.econ2.jhu.edu/people/ccarroll/public/lecturenotes/Investment/qModel/) using both Qmod and Dolo.

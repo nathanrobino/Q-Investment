@@ -18,7 +18,7 @@
 #
 # # Examples illustrating the use of the Qmod class.
 #
-# This notebook shows how to construct and use objects of the Qmod class, which is defined in Q_investment.py.
+# This notebook shows how to construct and use objects of the Qmod class, which is defined in q-investment.py.
 
 # %% {"code_folding": []}
 # Preamble
@@ -31,7 +31,7 @@ import matplotlib.pyplot as plt
 import sys
 sys.path.append('../')
 
-from Qmod.Q_investment import Qmod
+from Qmod import Qmod
 # %% [markdown]
 # # Examples
 

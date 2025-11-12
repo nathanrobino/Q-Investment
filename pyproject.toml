@@ -1,0 +1,83 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "q-investment"
+version = "0.1.0"
+description = "A Python class implementing the Abel-Hayashi 'Marginal Q' model of investment"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Christopher D. Carroll"},
+]
+keywords = ["economics", "investment", "q-model", "abel-hayashi", "capital"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Economics",
+]
+
+dependencies = [
+    "numpy==1.23.5",
+    "scipy==1.13.1",
+    "matplotlib==3.9.0",
+]
+
+[project.optional-dependencies]
+# Dolo support - all versions pinned to tested configuration
+dolo = [
+    "dolo==0.4.9.12",
+    "pandas==1.5.3",
+    "numba==0.56.4",
+    "quantecon==0.10.1",
+    "xarray==0.15.1",
+    "ruamel.yaml==0.16.13",
+    "multipledispatch==0.6.0",
+    "ipython==7.34.0",
+    "dolang==0.0.10",
+    "interpolation==2.2.7",
+]
+dev = [
+    "pytest==8.3.5",
+    "pytest-cov==6.1.1",
+    "jupyter==1.1.1",
+    "notebook==6.5.4",
+]
+all = [
+    "q-investment[dolo,dev]",
+]
+
+[project.urls]
+Homepage = "https://github.com/llorracc/Q-Investment"
+Repository = "https://github.com/llorracc/Q-Investment"
+Documentation = "http://www.econ2.jhu.edu/people/ccarroll/public/lecturenotes/Investment/qModel/"
+
+[tool.setuptools]
+packages = ["Qmod"]
+
+[tool.setuptools.package-data]
+Qmod = ["*.py"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--verbose",
+    "--strict-markers",
+    "--tb=short",
+]
+
+[tool.uv]
+# Dev dependencies are defined in [project.optional-dependencies]
+

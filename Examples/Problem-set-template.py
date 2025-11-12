@@ -47,7 +47,7 @@ import pandas as pd
 # change the path.
 import sys
 sys.path.append('../')
-from Qmod.Q_investment import Qmod
+from Qmod import Qmod
 
 # %% [markdown]
 # I then define a function that takes two Qmod objects and plots their phase diagrams in the same figure.
@@ -138,7 +138,7 @@ Qmodel.solve()
 ## Dolo
 
 # First import the external file with the model description.
-QDolo = yaml_import("../Dolo/Q_model.yaml")
+QDolo = yaml_import("../Dolo/Q-model.yaml")
 
 # Then replace the default parameters with our desired ones.
 QDolo.set_calibration(alpha = alpha, delta = delta, omega = omega)

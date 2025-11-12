@@ -14,11 +14,14 @@
 # ---
 
 # %% [markdown]
-# # Structural Changes in the q Model: lecture notes experiments
+# # Examples of structural change in the Abel-Hayashi "Q" investment model
 #
-# This notebook simulates the thought experiments discussed in Christopher D. Carroll's graduate
+# This notebook illustrates the dynamic behavior of capital and its marginal
+# value in the Abel-Hayashi model of investment when structural changes happen.
+#
+# I simulate the changes discussed in Prof. Christopher D. Carroll's graduate
 # Macroeconomics [lecture notes](http://www.econ2.jhu.edu/people/ccarroll/public/lecturenotes/Investment/qModel/):
-# productivity, corporate tax rate, and investment tax credit changes. For each experiment, the the figure from the lecture notes is reproduced.
+# productivity, corporate tax rate, and investment tax credit changes.
 #
 # For each change I display the behavior of the model in two different
 # contexts:
@@ -28,9 +31,7 @@
 # %% {"code_folding": []}
 # Preamble
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
-matplotlib.rcParams['axes.labelsize'] = 20
 
 from copy import deepcopy
 from scipy import optimize
@@ -45,10 +46,11 @@ import pandas as pd
 # change the path.
 import sys
 sys.path.append('../')
-from Qmod.Q_investment import Qmod
+from Qmod import Qmod
 
 # %% [markdown]
-# Since the plots for every experiment have the same format, I first define functions that carry out the analysis given a path for the exogenous variables.
+# I first define functions to compute and present optimal dynamics in face of
+# structural changes in the Qmod implementation.
 # %% {"code_folding": [0]}
 # Function definitions
 def pathValue(invest,mod1,mod2,k0,t):
@@ -83,7 +85,7 @@ def pathValue(invest,mod1,mod2,k0,t):
 
     return(value)
 
-def structural_change(mod1,mod2,k0,t_change,T_sim,npoints = 300, figname = None):
+def structural_change(mod1,mod2,k0,t_change,T_sim,npoints = 300):
     """
     Computes (optimal) capital and lambda dynamics in face of a structural
     change in the Q investment model.
@@ -113,8 +115,6 @@ def structural_change(mod1,mod2,k0,t_change,T_sim,npoints = 300, figname = None)
     # Find paths of capital and lambda
     k = np.zeros(T_sim)
     lam = np.zeros(T_sim)
-    invest = np.zeros(T_sim)
-    
     k[0] = k0
     for i in range(0,T_sim-1):
 
@@ -123,32 +123,19 @@ def structural_change(mod1,mod2,k0,t_change,T_sim,npoints = 300, figname = None)
             # path computed above.
             k[i+1] = k[i]*(1-mod1.delta) + inv[i]
             lam[i] = mod1.findLambda(k[i],k[i+1])
-            invest[i] = inv[i]
-            
         else:
             # After the change, investment follows the post-change policy rule.
             k[i+1] = mod2.k1Func(k[i])
             lam[i] = mod2.findLambda(k[i],k[i+1])
-            invest[i] = k[i+1] - (1-mod2.delta)*k[i]
-            
-    # Compute final period lambda and investment
+
     lam[T_sim-1] = mod2.findLambda(k[T_sim-1],mod2.k1Func(k[T_sim-1]))
-    invest[T_sim-1] = mod2.k1Func(k[T_sim-1]) - (1-mod2.delta)*k[T_sim-1]
-    
-    # Get a vector with the post-itc price of capital, to calculate q
-    Pcal = np.array([1-mod1.zeta]*t_change + [1-mod2.zeta]*(T_sim-t_change))
-    
-    # Compute q
-    q = lam/Pcal
-    
+
     # Create a figure with phase diagrams and dynamics.
-    fig, ax = plt.subplots(3, 2, figsize=(15,12))
-    
-    # 1st plot: lambda phase diagrams
-    
+    plt.figure()
+
     # Plot k,lambda path.
-    ax[0,0].plot(k,lam,'.k')
-    ax[0,0].plot(k[t_change],lam[t_change],'.r',label = 'Change takes effect')
+    plt.plot(k,lam,'.k')
+    plt.plot(k[t_change],lam[t_change],'.r',label = 'Change takes effect')
 
     # Plot the loci of the pre and post-change models.
     k_range = np.linspace(0.1*min(mod1.kss,mod2.kss),2*max(mod1.kss,mod2.kss),
@@ -159,70 +146,46 @@ def structural_change(mod1,mod2,k0,t_change,T_sim,npoints = 300, figname = None)
     for i in range(2):
 
         # Plot k0 locus
-        ax[0,0].plot(k_range,mods[i].P*np.ones(npoints),
-                     linestyle = '--', color = colors[i],label = labels[i])
+        plt.plot(k_range,mods[i].P*np.ones(npoints),
+                 linestyle = '--', color = colors[i],label = labels[i])
         # Plot lambda0 locus
-        ax[0,0].plot(k_range,[mods[i].lambda0locus(x) for x in k_range],
-                     linestyle = '--', color = colors[i])
+        plt.plot(k_range,[mods[i].lambda0locus(x) for x in k_range],
+                 linestyle = '--', color = colors[i])
         # Plot steady state
-        ax[0,0].plot(mods[i].kss,mods[i].P,marker = '*', color = colors[i])
+        plt.plot(mods[i].kss,mods[i].P,marker = '*', color = colors[i])
 
-    ax[0,0].set_xlabel('$k$')
-    ax[0,0].set_ylabel('$\\lambda$')
-    ax[0,0].legend()
-    
-    # 2nd plot: q phase diagrams
-    
-    # Plot k,lambda path.
-    ax[0,1].plot(k,q,'.k')
-    ax[0,1].plot(k[t_change],q[t_change],'.r',label = 'Change takes effect')
+    plt.title('Phase diagrams and model dynamics')
+    plt.xlabel('K')
+    plt.ylabel('Lambda')
+    plt.legend()
 
-    # Plot the loci of the pre and post-change models.
-    mods = [mod1,mod2]
-    colors = ['r','b']
-    labels = ['Pre-change','Post-change']
-    for i in range(2):
-
-        # Plot k0 locus
-        ax[0,1].plot(k_range,np.ones(npoints),
-                     linestyle = '--', color = colors[i],label = labels[i])
-        # Plot q0 locus
-        ax[0,1].plot(k_range,[mods[i].lambda0locus(x)/mods[i].P for x in k_range],
-                     linestyle = '--', color = colors[i])
-        # Plot steady state
-        ax[0,1].plot(mods[i].kss,1,marker = '*', color = colors[i])
-
-    ax[0,1].set_xlabel('$k$')
-    ax[0,1].set_ylabel('$q$')
-    ax[0,1].legend()
-    
-    # 3rd plot: capital dynamics
-    time = range(T_sim)
-    ax[1,0].plot(time,k,'.k')
-    ax[1,0].set_xlabel('$t$')
-    ax[1,0].set_ylabel('$k_t$')
-    
-    # 4rd plot: lambda dynamics
-    ax[1,1].plot(time,lam,'.k')
-    ax[1,1].set_xlabel('$t$')
-    ax[1,1].set_ylabel('$\\lambda_t$')
-    
-    # 5th plot: investment dynamics
-    ax[2,0].plot(time,invest,'.k')
-    ax[2,0].set_xlabel('$t$')
-    ax[2,0].set_ylabel('$i_t$')
-    
-    # 6th plot: q dynamics
-    ax[2,1].plot(time,q,'.k')
-    ax[2,1].set_xlabel('$t$')
-    ax[2,1].set_ylabel('$q_t$')
-    
-    if figname is not None:
-        fig.savefig('../Figures/'+figname+'.svg')
-        fig.savefig('../Figures/'+figname+'.png')
-        fig.savefig('../Figures/'+figname+'.pdf')
-    
     return({'k':k, 'lambda':lam})
+# %% [markdown]
+# I now define functions to handle parameter changes in the Dolo implementation
+
+# %% {"code_folding": [0]}
+def simul_change_dolo(model, k0,  exog0, exog1, t_change, T_sim):
+
+    # The first step is to create time series for the exogenous variables
+    exog = np.array([exog1,]*(T_sim - t_change))
+    if t_change > 0:
+        exog = np.concatenate((np.array([exog0,]*(t_change)),
+                               exog),
+                              axis = 0)
+    exog = pd.DataFrame(exog, columns = ['R','tau','itc_1','psi'])
+
+    # Simpulate the optimal response
+    dr = pf.deterministic_solve(model = model,shocks = exog, T=T_sim,
+                                verbose=True, s1 = k0)
+
+    # Dolo uses the first period to report the steady state
+    # so we ommit it.
+    return(dr[1:])
+
+
+# %% [markdown]
+# Now I create a base model parametrization using both the Qmod class and the Dolo implementation.
+
 # %%
 # Base parameters
 
@@ -250,16 +213,22 @@ psi = 1
 
 
 ## Qmod python class
+
 Qmodel = Qmod(beta, tau, alpha, omega, zeta, delta, psi)
 Qmodel.solve()
+
+## Dolo
+
+QDolo = yaml_import("../Dolo/Q-model.yaml")
+# We do not pass psi, tau, or zeta since they are handled not as parameters
+# but exogenous variables.
+QDolo.set_calibration(R = R, alpha = alpha, delta = delta, omega = omega)
 
 # %% [markdown]
 # ## Examples:
 #
 # ## 1. An unanticipated increase in productivity
 # %% {"code_folding": [0]}
-figname = 'ProductivityIncrease'
-
 # Total simulation time
 T = 20
 # Time the change occurs
@@ -278,26 +247,52 @@ Q_high_psi.psi = psi_new
 Q_high_psi.solve()
 
 sol = structural_change(mod1 = Qmodel, mod2 = Q_high_psi,
-                        k0 = k0, t_change = t,T_sim=T,
-                       figname = figname)
-fig = plt.gcf() # Get the figure in order to save it
+                        k0 = k0, t_change = t,T_sim=T)
+
+## Dolo
+
+soldolo = simul_change_dolo(model = QDolo, k0 = np.array([k0]),
+                            exog0 = [R,tau,zeta,psi],
+                            exog1 = [R,tau,zeta,psi_new],
+                            t_change = t, T_sim = T)
+
+# Plot the path of capital under both solutions
+time = range(T)
+plt.figure()
+plt.plot(time, sol['k'], 'x', label = 'Qmod', alpha = 0.8)
+plt.plot(time, soldolo['k'], '+', label = 'Dolo', alpha = 0.8)
+plt.legend()
+plt.title('Capital dynamics')
+plt.ylabel('$k_t$ : capital')
+plt.xlabel('$t$ : time')
 # %% [markdown]
 # ## 2. An increase in productivity announced at t=0 but taking effect at t=5
 # %% {"code_folding": []}
-figname = 'ProductivityIncrease_ant'
-
 # Repeat the calculation now assuming the change happens at t=5
 t = 5
 
 # Qmod class
 sol = structural_change(mod1 = Qmodel, mod2 = Q_high_psi,
-                        k0 = k0, t_change = t,T_sim=T,
-                        figname = figname)
+                        k0 = k0, t_change = t,T_sim=T)
+
+# Dolo
+soldolo = simul_change_dolo(model = QDolo, k0 = np.array([k0]),
+                            exog0 = [R,tau,zeta,psi],
+                            exog1 = [R,tau,zeta,psi_new],
+                            t_change = t, T_sim = T)
+
+# Plot the path of capital under both solutions
+time = range(T)
+plt.figure()
+plt.plot(time, sol['k'], 'x', label = 'Qmod', alpha = 0.8)
+plt.plot(time, soldolo['k'], '+', label = 'Dolo', alpha = 0.8)
+plt.legend()
+plt.title('Capital dynamics')
+plt.ylabel('$k_t$ : capital')
+plt.xlabel('$t$ : time')
 # %% [markdown]
 # ## 3. An unanticipated corporate tax-cut
 # %% {"code_folding": [0]}
-figname = 'CorporateTaxReduction'
-
 # Set the taxes of the 'high-tax' scenario
 tau_high = 0.4
 # Set time of the change
@@ -315,25 +310,51 @@ Q_high_tau.solve()
 k0 = Q_high_tau.kss
 
 sol = structural_change(mod1 = Q_high_tau, mod2 = Qmodel,
-                        k0 = k0, t_change = t,T_sim=T,
-                        figname = figname)
+                        k0 = k0, t_change = t,T_sim=T)
+
+# Dolo
+soldolo = simul_change_dolo(model = QDolo, k0 = np.array([k0]),
+                            exog0 = [R,tau_high,zeta,psi],
+                            exog1 = [R,tau,zeta,psi],
+                            t_change = t, T_sim = T)
+
+# Plot the path of capital under both solutions
+time = range(T)
+plt.figure()
+plt.plot(time, sol['k'], 'x', label = 'Qmod', alpha = 0.8)
+plt.plot(time, soldolo['k'], '+', label = 'Dolo', alpha = 0.8)
+plt.legend()
+plt.title('Capital dynamics')
+plt.ylabel('$k_t$ : capital')
+plt.xlabel('$t$ : time')
 # %% [markdown]
 # ## 4. A corporate tax cut announced at t=0 but taking effect at t=5
 # %% {"code_folding": [0]}
-figname = 'CorporateTaxReduction_ant'
-
 # Modify the time of the change
 t = 5
 
 # Qmod class
 sol = structural_change(mod1 = Q_high_tau, mod2 = Qmodel,
-                        k0 = k0, t_change = t,T_sim=T,
-                        figname = figname)
+                        k0 = k0, t_change = t,T_sim=T)
+
+# Dolo
+soldolo = simul_change_dolo(model = QDolo, k0 = np.array([k0]),
+                            exog0 = [R,tau_high,zeta,psi],
+                            exog1 = [R,tau,zeta,psi],
+                            t_change = t, T_sim = T)
+
+# Plot the path of capital under both solutions
+time = range(T)
+plt.figure()
+plt.plot(time, sol['k'], 'x', label = 'Qmod', alpha = 0.8)
+plt.plot(time, soldolo['k'], '+', label = 'Dolo', alpha = 0.8)
+plt.legend()
+plt.title('Capital dynamics')
+plt.ylabel('$k_t$ : capital')
+plt.xlabel('$t$ : time')
 # %% [markdown]
 # ## 5. An unanticipated ITC increase
 # %% {"code_folding": [0]}
-figname = 'ITCIncrease'
-
 # Set time of the change
 t=0
 # Set investment tax credit in the high case
@@ -349,17 +370,45 @@ Q_high_itc.zeta = itc_high
 Q_high_itc.solve()
 
 sol = structural_change(mod1 = Qmodel, mod2 = Q_high_itc,
-                        k0 = k0, t_change = t,T_sim=T,
-                        figname = figname)
+                        k0 = k0, t_change = t,T_sim=T)
+
+# Dolo
+soldolo = simul_change_dolo(model = QDolo, k0 = np.array([k0]),
+                            exog0 = [R,tau,zeta,psi],
+                            exog1 = [R,tau,itc_high,psi],
+                            t_change = t, T_sim = T)
+
+# Plot the path of capital under both solutions
+time = range(T)
+plt.figure()
+plt.plot(time, sol['k'], 'x', label = 'Qmod', alpha = 0.8)
+plt.plot(time, soldolo['k'], '+', label = 'Dolo', alpha = 0.8)
+plt.legend()
+plt.title('Capital dynamics')
+plt.ylabel('$k_t$ : capital')
+plt.xlabel('$t$ : time')
 # %% [markdown]
 # ## 6. An ITC increase announced at t=0 but taking effect at t=5
 # %% {"code_folding": [0]}
-figname = 'ITCIncrease_ant'
-
 # Modify time of the change
 t = 5
 
 # Qmod class
 sol = structural_change(mod1 = Qmodel, mod2 = Q_high_itc,
-                        k0 = k0, t_change = t,T_sim=T,
-                        figname = figname)
+                        k0 = k0, t_change = t,T_sim=T)
+
+# Dolo
+soldolo = simul_change_dolo(model = QDolo, k0 = np.array([k0]),
+                            exog0 = [R,tau,zeta,psi],
+                            exog1 = [R,tau,itc_high,psi],
+                            t_change = t+1, T_sim = T)
+
+# Plot the path of capital under both solutions
+time = range(T)
+plt.figure()
+plt.plot(time, sol['k'], 'x', label = 'Qmod', alpha = 0.8)
+plt.plot(time, soldolo['k'], '+', label = 'Dolo', alpha = 0.8)
+plt.legend()
+plt.title('Capital dynamics')
+plt.ylabel('$k_t$ : capital')
+plt.xlabel('$t$ : time')
